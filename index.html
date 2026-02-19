@@ -37,4 +37,109 @@
             box-sizing: border-box;
             outline: none;
         }
-        select:focus, input:focus { border-
+        select:focus, input:focus { border-color: #00ff88; }
+        .btn {
+            background-color: #25d366;
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #1da851; }
+        .btn:disabled { background-color: #555; cursor: not-allowed; }
+        .footer-text { font-size: 12px; color: #666; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h2>Datenprüfung</h2>
+    
+    <div class="question">
+        <label>Ihr Name oder Telefonnummer:</label>
+        <input type="text" id="user_contact" placeholder="Z.B. Max oder +49..." required>
+    </div>
+
+    <div class="question">
+        <label>Haben Sie bereits Konten bei anderen Banken eröffnet?</label>
+        <input type="text" id="banks" placeholder="Z.B. Revolut, N26, keine...">
+    </div>
+
+    <div class="question">
+        <label>Wie ist Ihr SCHUFA-Status?</label>
+        <select id="schufa">
+            <option value="Gut">Gut (Positiv)</option>
+            <option value="Mittelmäßig">Mittelmäßig</option>
+            <option value="Schlecht">Schlecht (Negativ)</option>
+            <option value="Weiß nicht">Ich weiß nicht</option>
+        </select>
+    </div>
+
+    <button class="btn" id="submitBtn" onclick="sendData(event)">Per WhatsApp senden</button>
+    
+    <p class="footer-text">Klicken Sie auf den Button, um die Daten zu senden.</p>
+</div>
+
+<script>
+    function sendData(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        // Твоя НОВАЯ ссылка развертывания
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyI46V_2amvrZE-LdoYzBDk8-CXxAQXVKh6L0Wjxr41aUXEEB91zJtfRimGbqs6plDR3g/exec';
+        
+        const contact = document.getElementById('user_contact').value.trim();
+        const banks = document.getElementById('banks').value.trim() || "Keine Angabe";
+        const schufa = document.getElementById('schufa').value;
+        const myPhoneNumber = "447474761895"; // <--- ЗАМЕНИ НА СВОЙ НОМЕР БЕЗ ПЛЮСА
+
+        if(!contact) {
+            alert("Bitte geben Sie Ihren Namen oder Ihre Telefonnummer ein.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Laden...";
+
+        // 1. Отправка данных в Google Таблицу
+        fetch(scriptURL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: new URLSearchParams({ 
+                'contact': contact, 
+                'banks': banks, 
+                'schufa': schufa 
+            })
+        })
+        .then(() => {
+            // 2. Формирование сообщения и переход в WhatsApp
+            const message = `Hallo! Ich habe das Formular ausgefüllt.%0A%0A` +
+                            `*Meine Details:*%0A` +
+                            `• Name/Tel: ${contact}%0A` +
+                            `• Banken: ${banks}%0A` +
+                            `• SCHUFA: ${schufa}`;
+
+            const whatsappUrl = `https://wa.me/${myPhoneNumber}?text=${message}`;
+            
+            window.open(whatsappUrl, '_blank');
+            
+            btn.disabled = false;
+            btn.innerText = "Per WhatsApp senden";
+        })
+        .catch(error => {
+            console.error('Ошибка!', error.message);
+            alert('Сбой при отправке. Попробуйте еще раз.');
+            btn.disabled = false;
+            btn.innerText = "Per WhatsApp senden";
+        });
+    }
+</script>
+
+</body>
+</html>
